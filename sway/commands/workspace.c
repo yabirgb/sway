@@ -181,7 +181,13 @@ struct cmd_results *cmd_workspace(int argc, char **argv) {
 			++argv;
 		}
 
-
+		bool create = false;
+		if (argc > 1) {
+			create = strcasecmp(argv[1], "--create") == 0;
+			sway_log(SWAY_DEBUG, "asdf");
+		}
+		struct sway_seat *seat = input_manager_current_seat();
+		struct sway_workspace *current = seat_get_focused_workspace(seat);
 		struct sway_workspace *ws = NULL;
 		if (strcasecmp(argv[0], "number") == 0) {
 			if (argc < 2) {
@@ -199,10 +205,12 @@ struct cmd_results *cmd_workspace(int argc, char **argv) {
 			}
 		} else if (strcasecmp(argv[0], "next") == 0 ||
 				strcasecmp(argv[0], "prev") == 0 ||
-				strcasecmp(argv[0], "next_on_output") == 0 ||
-				strcasecmp(argv[0], "prev_on_output") == 0 ||
 				strcasecmp(argv[0], "current") == 0) {
 			ws = workspace_by_name(argv[0]);
+		} else if (strcasecmp(argv[0], "next_on_output") == 0) {
+			ws = workspace_output_next(current, create);
+		} else if (strcasecmp(argv[0], "prev_on_output") == 0) {
+			ws = workspace_output_prev(current, create);
 		} else if (strcasecmp(argv[0], "back_and_forth") == 0) {
 			struct sway_seat *seat = config->handler_context.seat;
 			if (!seat->prev_workspace_name) {
